@@ -1,14 +1,18 @@
-FROM node:18-alpine
+FROM node:18-slim
 WORKDIR /app
 
-# Copy only package files & install dependencies
-COPY package*.json vite.config.js /app/
+# Copy only manifest + config, install deps (omit Rollup’s optional natives)
+COPY package*.json ./
+
+ENV ROLLUP_SKIP_NATIVES=true
+ENV npm_config_arch=x64
+ENV npm_config_platform=linux
+
 RUN npm install
 
-COPY . /app
+COPY . .
+EXPOSE 5173
 
-# Build the app
-RUN npm run build
 
 # Run the app
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

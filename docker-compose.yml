@@ -1,11 +1,10 @@
-version: '3.8'
 services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_USER: agentmatch
+      POSTGRES_USER: channel
       POSTGRES_PASSWORD: secret
-      POSTGRES_DB: agentmatch_dev
+      POSTGRES_DB: channel_dev
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
@@ -18,7 +17,7 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      DATABASE_URL: postgresql+asyncpg://agentmatch:secret@db:5432/agentmatch_dev
+      DATABASE_URL: postgresql+asyncpg://channel:secret@db:5432/channel_dev
     ports:
       - '8000:8000'
     depends_on:
@@ -27,14 +26,16 @@ services:
   frontend:
     build:
       context: ./frontend
-    command: npm run dev
-    volumes:
-      - ./frontend:/app
+    
+    command: npm run dev -- --host 0.0.0.0
     working_dir: /app
     ports:
       - '5173:5173'
     environment:
       VITE_API_URL: http://localhost:8000/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules 
 
 volumes:
   db_data:

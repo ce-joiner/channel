@@ -1,14 +1,21 @@
 FROM python:3.11-slim
 WORKDIR /app
 
-# Copy dependency specs & install Poetry
-COPY pyproject.toml poetry.lock* /app/
-RUN pip install poetry \
-    && poetry config virtualenvs.create false \
-    && poetry install --only=main --no-root
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy your application code
+# Copy dependency specs
+COPY pyproject.toml poetry.lock /app/
+
+# Install Poetry and dependencies
+RUN pip install "poetry==1.7.1" \
+    && poetry config virtualenvs.create false \
+    && poetry install --no-interaction --only main
+
+# Copy application code
 COPY . /app
 
 # Run the application
-CMD ["poetry", "run", "python", "app.py"]
+CMD ["uvicorn", "app:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
